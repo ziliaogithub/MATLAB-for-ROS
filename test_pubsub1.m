@@ -2,13 +2,17 @@
 clear, close all ; clc;
 
 %% rosネットワークへの接続
+rosinit
 %ros masterが起動しているIPアドレス
-rosinit('192.168.10.14');
+%rosinit('192.168.10.14');
 
 %% Nodeの作成
 node1 = robotics.ros.Node('pub1');
 node2 = robotics.ros.Node('subpub1');
 node3 = robotics.ros.Node('sub1');
+
+%% rateの定義
+r = robotics.Rate(1);
 
 %% publisherの定義
 pub1 = robotics.ros.Publisher(node1, '/int_a', 'std_msgs/Int16');
@@ -18,6 +22,8 @@ msg_a = rosmessage(pub1);
 msg_a.Data = 5;
 send(pub1,msg_a);
 x=sprintf('pubData = %d',msg_a.Data);
+disp(x)
+waitfor(r);
 
 %% subscriberの定義
 sub1 =robotics.ros.Subscriber(node2,'/int_a');
@@ -31,6 +37,9 @@ msg_b.Data = sub_a + 1;
 %% publish2
 pub2 = robotics.ros.Publisher(node2, '/int_b', 'std_msgs/Int16');
 send(pub2,msg_b);
+y=sprintf('pubData = %d',msg_b.Data);
+disp(y)
+waitfor(r);
 
 %% subscribe
 sub2 =robotics.ros.Subscriber(node3,'/int_b');
@@ -43,7 +52,6 @@ rosshutdown;
 %% callback関数を定義
 function pub_a_Callback1(~,msg)
 global sub_a
-sub_a = rosmessage('std_msgs/Int16');
 sub_a = msg.Data;
 end
 function pub_a_Callback2(~,msg)
